@@ -2,6 +2,9 @@ from describe import Describe
 import plotly.express as px
 import sys
 
+## import plotly
+## plotly.offline.plot(fig, filename='fig.html', auto_open=False, include_plotlyjs='cdn')
+
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('\nUsage : histogram.py PathToDatasetFile\n')
