@@ -10,8 +10,6 @@ class Describe:
         self.open_dataset(path)
         self.fill_stat()
 
-        print(self.stat)
-
     def open_dataset(self, path : str):
         if not os.path.isfile(path) :
             print("\nWrong path for dataset\n")
@@ -74,3 +72,4 @@ if __name__ == '__main__':
         exit(1)
 
     describe = Describe(sys.argv[1])
+    print(describe.stat)
