@@ -1,9 +1,7 @@
 from describe import Describe
-import plotly.express as px
+from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import sys
-
-## TO DO : Add title to graph
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -12,29 +10,19 @@ if __name__ == '__main__':
 
     describe = Describe(sys.argv[1])
 
+    df = describe.df
 
-    df = describe.stat
+    fig = make_subplots(rows=2, cols=6, vertical_spacing=0.05, subplot_titles=('Arithmancy', 'Herbology', 'Defense Against the Dark Arts', 'Divination', 'Muggle Studies', 'Ancient Runes', 'History of Magic', 'Transfiguration', 'Potions', 'Care of Magical Creatures', 'Charms', 'Flying'))
+ 
+    i = j = 1
 
-    fig = go.Figure()
+    for col in df.columns:
+        if df[col].dtype == float and col != 'Astronomy':
+            if j == 7:
+                j = 1
+                i = 2
+            fig.add_trace(go.Scatter(y=df['Astronomy'], x=df[col], mode='markers'), row=i, col=j)
+            j += 1
 
-    for ind in df.index:
-       fig.add_trace(go.Scatter(y=df.loc[ind], x=df.columns, mode='markers', name=ind))
-
-    # fig.update_yaxes(type="log")
-    fig.update_traces(marker_size=40)
+    fig.update_layout(showlegend=False, title='Plot of Astronomy in function of each courses', title_x=0.5)
     fig.show()
-
-########### PRINT ALL VALUES ###########
-
-    # df = describe.df.iloc[:,5:18]
-
-    # print(df)
-    
-    
-    # fig = go.Figure()
-
-    # for col in df.columns:
-    #    fig.add_trace(go.Scatter(y=df[col], mode='markers', name=col))
-
-    # fig.update_yaxes(type="log")
-    # fig.show()
