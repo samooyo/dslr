@@ -1,140 +1,122 @@
-import numpy as np
-import os.path
-from numpy.core.fromnumeric import mean, std
-import pandas as pd
-import plotly.express as px
+from plotly.subplots import make_subplots
+from pandas.core.frame import DataFrame
 import plotly.graph_objects as go
+from numpy.core.fromnumeric import mean, std
+import numpy as np
+import pandas as pd
+import sys, os.path
 
-SELECTED_COURSES = ['Hogwarts House', 'Transfiguration', 'Divination', 'Astronomy']
-HOUSES = ['Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff']
+SELECTED_COURSES = ['Hogwarts House', 'Divination', 'Transfiguration', 'Astronomy'] # Better in
+HOUSES = ['Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff']                     # a file ? like a const.py or conf.py
 
 class LogReg:
 
-    def __init__(self, pathData, epochs=100, learningRate=0.05):
-        # self.bias = 0
-        # self.weight = 0
-        # self.normalizedbias = 0
-        # self.normalizedweight = 0
-        # self.x = 0
-        # self.y = 0
-        # self.normalizedX = 0
-        # self.normalizedY = 0
-        # self.lenData = 0
-        # self.costHistory = []
-        # self.biasHistory = []
-        # self.weightHistory = []
-        # self.processData(pathData)
+    def __init__(self, path_data : str, epochs : int=500, learning_rate : float=0.1) -> None:
+        self.epochs         = epochs
+        self.learning_rate  = learning_rate
 
-        self.epochs = epochs
-        self.learningRate = learningRate
-        self.df = pd .read_csv(pathData, index_col='Index')
-        # self.df = self.df.dropna()
+        self.stand_x    : DataFrame
+        self.df         : DataFrame
         
-        x = self.df.loc[:, SELECTED_COURSES]
+        self.all_thetas = pd.DataFrame()
 
-        x = x.dropna()
-        stand_x = self.standarizer(x.iloc[:, 1:])
-        for house in HOUSES:
-            y = np.where(x['Hogwarts House'] == house, 1, 0)
-            theta = self.train(stand_x, y)
-            test = self.sigmoid(theta * x.iloc[:, 1:])
-            print(test)
-            test['Hogwarts House'] = x.iloc[:, 0:1]
-            # fig = px.scatter(data_frame=test,x=test['Transfiguration'], color='Hogwarts House')
-            # fig.show()
-        # exit()
+        self.processData(path_data)
+        self.initialize_training()
 
-        # x['results'] = test['Divination'].values
-        # print(mean(x['results']), std(x['results']))
-        # print(x)
-
-
-
-    def processData(self, pathData):
-        if not os.path.isfile(pathData):
-            print("Wrong path for the data file")
+    def processData(self, path_data : str) -> None:
+        if not os.path.isfile(path_data):
+            print("\nWrong path for the data file\n")
             exit(1)
+        self.df = pd.read_csv(path_data, index_col='Index')
 
-        self.data = pd.read_csv(pathData)
-        self.x = self.data['km'].values
-        self.y = self.data['price'].values
-        if (len(self.x) != len(self.y)) or len(self.x) == 0:
-            print("Data file is no gooood")
-            exit(1)
-
-        self.normalizedX = self.standarizer(self.x)
-        self.normalizedY = self.standarizer(self.y)        
-        self.lenData = len(self.x)
-
-    def standarizer(self, values):
-
-        standartizedValues = (values - mean(values)) / (std(values))
-
-        return standartizedValues
-
-##################################################################################
-    def gradient(self, theta, x, y):
-        # Computes the gradient of the cost function at the point theta
+############################## Gradient Section ##############################
+    def standarizer(self, values : list) -> list:
+        return (values - mean(values)) / std(values)
+         
+    def gradient(self, thetas : np.ndarray, x : np.ndarray, y : np.ndarray) -> np.ndarray:
         m = x.shape[0]
-        return (1 / m) * np.dot(x.T, self.sigmoid(self.net_input(theta,   x)) - y)
-                                    #(        == h(x) or probability()      )               
-    def cost_function(self, theta, x, y):   # J(theta)
+        return (1.0 / m) * np.dot(x.T, self.probability(thetas, x) - y)
 
+    def probability(self, thetas : np.ndarray, x : np.ndarray) -> np.ndarray:   #h(x)
+        return self.sigmoid(self.z(thetas, x))
+
+    def z(self, thetas, x : np.ndarray) -> np.ndarray:                          # (z) = theta.T * x
+        return np.dot(x, thetas)
+
+    def sigmoid(self, x : np.ndarray) -> np.ndarray:                            # g(z)
+        return 1.0 / (1.0 + np.exp(-x))
+
+    def cost_function(self, thetas, x : DataFrame, y : np.ndarray) -> float:    # cost function
         m = x.shape[0]
-        total_cost = -(1 / m) * np.sum(
-            y * np.log(self.probability(theta, x)) + (1 - y) * np.log(
-                1 - self.probability(theta, x)))
+        total_cost = -(1.0 / m) * np.sum(
+            y * np.log(self.probability(thetas, x)) + (1.0 - y) *
+            np.log(1.0 - self.probability(thetas, x)))
+
         return total_cost
 
-    def probability(self, theta, x):        #h(x)
-        return self.sigmoid(self.net_input(theta, x))
+    def train(self, x : DataFrame, y : np.ndarray) -> np.ndarray:               # x is course and y = 'Hogwarts House'
+        thetas = np.random.randn(x.shape[1])
+        cost = []
+        for i in range(self.epochs):
+            j = self.cost_function(thetas, x, y)
+            g = self.gradient(thetas, x, y)
+            thetas -= self.learning_rate * g
+            cost.append(j)
 
-    def net_input(self, theta, x):          # (z) = theta.T * x
+        return thetas, j
 
-        return np.dot(x, theta)
+    def initialize_training(self) -> None:
+        # x = x.dropna() // less drop, maybe better ?
+        tmp_df = self.df.dropna()
 
-    def sigmoid(self, x):                   # g(z)
-        y = 1 / (1 + np.exp(-x))
+        self.x = tmp_df.loc[:, SELECTED_COURSES]
+        self.stand_x = self.standarizer(self.x.iloc[:, 1:])
 
-        return y
-
-    def train(self, x, y): # x is course and y = 'Hogwarts House' == current_house
-        theta = np.random.randn(x.shape[1])
-        # theta = np.zeros((x.shape[1]))
-        print(f'Theta before{theta}')
-        for i in range(1000):
-            # z = self.net_input(theta, x)
-            # h = self.probability(theta, x)
-            # j = self.cost_function(theta, x, y)
-            g = self.gradient(theta, x, y)
-            theta -= 0.01 * g
-
-        print(f'Theta after {theta}')
-        return theta
-
-##################################################################################
-
-    # def denormalizer(self):
-    #     self.weight = (max(self.y) - min(self.y)) * self.normalizedweight / (max(self.x) - min(self.x))
-    #     self.bias = min(self.y) + ((max(self.y) - min(self.y)) * self.normalizedbias) + self.weight * (1 - min(self.x))
-
-    # def addCostHistory(self):        
-
-    #     tot = 0
-    #     for i in range(self.lenData):
-    #         tot += (self.estimatePrice(self.normalizedX[i], self.normalizedbias, self.normalizedweight) - self.normalizedY[i])**2
-
-    #     cost = tot / (2 * self.lenData)
-    #     self.costHistory.append(cost)
-
-    # def saveThetas(self):
-    #     with open('files/thetas.txt', 'w') as f:
-    #         f.write(str(self.bias))
-    #         f.write('\n')
-    #         f.write(str(self.weight))
+        for house in HOUSES:
+            y = np.where(self.x['Hogwarts House'] == house, 1, 0)
+            thetas, cost = self.train(self.stand_x, y)
+            self.all_thetas[house] = thetas
 
 
+############################## Utilities ##############################
+    def save_thetas(self, thetas: np.ndarray, house : str) -> None:
+        pass # TO DO : save in file
 
+
+############################## Graph Section ##############################
+    def show_graph(self) -> None:
+        fig = make_subplots(rows=2, cols=2, subplot_titles=('Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff'))
+        row = col = 1
+        show = True
+        for house_sub in HOUSES:
+            if col == 3:
+                col = 1
+                row = 2
+
+            for house in HOUSES:
+                test = self.sigmoid( np.dot(self.all_thetas[house_sub] , self.stand_x.T))
+                results = pd.DataFrame()
+                results['Hogwarts House'] = self.x.iloc[:, 0:1]
+                results['results'] = test
+                results = results[results['Hogwarts House'] == house]
+                fig.add_trace(go.Scatter(x=results['results'], y=results.index, mode='markers', marker_color=self.get_color(house), showlegend=show, name=house), row=row, col=col)
+            show = False
+            col += 1
+        fig.show()
+
+    def get_color(self, house : str) -> str:
+        if house == 'Ravenclaw'     : return 'red'
+        if house == 'Slytherin'     : return 'blue'
+        if house == 'Gryffindor'    : return 'yellow'
+        if house == 'Hufflepuff'    : return 'green'
+
+
+############################## Main ##############################
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print('\nUsage : logreg_train.py PathToDatasetFile\n')
+        exit(1)
 
-    learn = LogReg('datasets/dataset_train.csv')
+    learn = LogReg(sys.argv[1])
+    # print(learn.all_thetas)
+    learn.show_graph()
