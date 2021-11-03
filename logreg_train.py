@@ -34,7 +34,7 @@ class LogReg:
         return (values - mean(values)) / std(values)
 
     def gradient(self, thetas : np.ndarray, x : np.ndarray, y : np.ndarray) -> np.ndarray:
-        m = x.shape[0]  # m is the nmber of elements
+        m = x.shape[0]  # m is the number of elements
         return (1.0 / m) * np.dot(x.T, self.probability(thetas, x) - y)
 
     def probability(self, thetas : np.ndarray, x : np.ndarray) -> np.ndarray:   ## h(x)
