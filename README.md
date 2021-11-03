@@ -7,7 +7,7 @@ The two main focus points are :
 - learn how to read a data set, to visualize it in different ways, to select and clean unnecessary information from a data set
 - train a logistic regression that will solve classification problem
 
-## Data visualization
+## Data visualization :
 
 ### Histogram : 
 ![](graphs/histogram.png)
@@ -28,9 +28,9 @@ From this pair plot we can choose the features that are the more relevant :
 - Transfiguration for Gryffindor
 - Astronomy to choose between Hufflepuff and Ravenclaw
 
-## Logistic regression
+## Logistic regression :
 
-### Theory
+### Theory :
 
 The logistic regression is a statistical model that use a logistic function to model a binary dependent variable. The concept is similar with the linear regression, we will iterate "epoch" number of time to reduce θ. Exept this time the cost function will act differently :
 - If our correct answer 'y' is 0, then the cost function will be 0 if our hypothesis function also outputs 0. If our hypothesis approaches 1, then the cost function will approach infinity.
@@ -48,7 +48,7 @@ $$g(x) = \frac{1}{1+e^{-x}}$$
 
 The model is binary, 0 or 1. The classification choosen is "One-vs-all", it is a multiclass classification where we are basically choosing one class and then lumping all the others into a single second class.
 
-### Application
+### Application :
 
 When the theory is implemented we have a complete classifier for this problem that is capable of giving the probability of a new student to be in each house between 0 and 1. We then take the maximun probability and class this student in the corresponding house. 
 
@@ -58,15 +58,20 @@ We can graph the outputs to have a better understanding of the logistic regressi
 
 The accuracy score of the program is 98.23%.
 
-## Usage
+## Usage :
 
 Create virtual envirement by running `python3 -m venv venv` then activate it with `source venv/bin/activate`  
 
 Install all dependencies by running `pip install -r requirements.txt`  
 
-Then :
+Then `python logreg_train.py` to train the algorithm and `python logreg_predict.py` for the prediction.
+
+Similarly all utilities can be used with :
 ```
-python GradientDescent.py
-python estimation.py
+python utilities/describe.py
+python utilities/histogram.py
+python utilities/scatter_plot.py
+python utilities/pair_plot.py
 ```
-In [files directory](files/) there are HTML files that can be opened directly from a browser to see all graphs.
+
+In [graphs directory](graphs/) there are HTML files that can be opened directly from a browser to see all graphs along with PNG.
