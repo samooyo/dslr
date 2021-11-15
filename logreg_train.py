@@ -9,7 +9,7 @@ from utilities.conf import HOUSES, SELECTED_COURSES_AND_HOUSES
 
 class LogReg:
 
-    def __init__(self, path_data : str, epochs : int=500, learning_rate : float=0.1) -> None:
+    def __init__(self, path_data : str, epochs : int=2000, learning_rate : float=0.1) -> None:
         self.epochs         = epochs
         self.learning_rate  = learning_rate
         
