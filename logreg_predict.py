@@ -21,22 +21,22 @@ if __name__ == "__main__":
         exit(1)
 
     try:
-        data_test   = pd.read_csv(sys.argv[1], index_col=0)              # TO DO : protect
-        wheights    = pd.read_csv(sys.argv[2], index_col=0) # TO DO : protect
+        data_test   = pd.read_csv(sys.argv[1], index_col=0)
+        wheights    = pd.read_csv(sys.argv[2], index_col=0)
     except:
         print("\nSorry, wrong files\n")
         exit(1)
 
     x           = data_test.drop(columns=['Hogwarts House'])
     x           = x.loc[:, SELECTED_COURSES]
-    x           = x.dropna()
     stand_x     = standarizer(x)
+    stand_x     = stand_x.fillna(0)
     results     = pd.DataFrame(index=x.index)
-    
+
     for house in HOUSES:
         test            = sigmoid(np.dot(wheights[house], stand_x.T))
         results[house]  = test
-
+    
     results['Hogwarts House'] = results.idxmax(axis=1)
     results.drop(results.columns[[0, 1, 2, 3]], axis=1, inplace=True)
     results.index.name = 'Index'

@@ -27,7 +27,14 @@ class LogReg:
         if not os.path.isfile(path_data):
             print("\nWrong path for the data file\n")
             exit(1)
-        self.df = pd.read_csv(path_data, index_col='Index')
+        try:
+            self.df = pd.read_csv(path_data, index_col='Index')
+        except:
+            print("\nThe file is not a dataset !\n")
+            exit(1)
+        if type(self.df['Hogwarts House'][1]) != str:
+            print("\nWrong dataset format !\n")
+            exit(1)
 
 ############################## Gradient Section ##############################
     def standarizer(self, values : list) -> list:

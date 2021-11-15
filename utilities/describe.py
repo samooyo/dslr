@@ -14,10 +14,17 @@ class Describe:
         if not os.path.isfile(path) :
             print("\nWrong path for dataset\n")
             exit(1)
+        try:
+             self.df = pd.read_csv(path)
+        except:
+            print("\nThe file is not a dataset !\n")
+            exit(1)
 
-        self.df = pd.read_csv(path)
         if self.df.columns[0] == 'Index':
             self.df = self.df.set_index('Index')
+        if type(self.df['Hogwarts House'][1]) != str:
+            print("\nWrong dataset format !\n")
+            exit(1)
 
     def fill_stat(self):
         self.stat = pd.DataFrame(index=['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max'])
